@@ -9,7 +9,7 @@ exports.addPR = (web, prsList, message) => {
     } else {
         PRurlRegex.lastIndex = 0;
         const newPR = PRurlRegex.exec(message.text)[0];
-        actualPRs.push(newPR);
+        actualPRs.push({url: newPR, status: 'open', openedBy: message.user});
         prsList[message.channel] = actualPRs;
         web.chat.postMessage({text: `Presto! PR ${newPR} added to the list. Your channel has ${actualPRs.length} pending PRs.`, channel: message.channel});
     }
