@@ -1,7 +1,5 @@
-let prList = {};
-export const addCommandMatcher = new RegExp(`--add-pr https:\/\/github\.com\/[\w|-]+\/[\w|-]+\/pull\/\d+`);
+exports.addCommandRegex = /add https:\/\/github\.com\/[\w|-]+\/[\w|-]+\/pull\/\d+/g;
 
-
-export const listPRs = (message) => {
-    // message as in form '--add 
+exports.listPRs = (web, prlists, message) => {
+    // Add pr to list[message.channel] 
 }

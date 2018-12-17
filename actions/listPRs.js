@@ -1,7 +1,5 @@
-let prList = {};
-export const listCommandMatcher = new RegExp(`--list-prs`);
+exports.listCommandRegex = /list/g;
 
-
-export const addPR = (message) => {
-    // list prs added in the same channel as the request comes from now.
+exports.listPRs = (web, prsList, message) => {
+    // print and interactive list of list[message.channel]
 }

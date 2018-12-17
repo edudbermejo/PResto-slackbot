@@ -1,0 +1,31 @@
+{
+  "name": "presto-slackbot",
+  "version": "0.0.1",
+  "description": "Slack Bot that allows team to organize the list of pending pull requests by slack channel.",
+  "main": "index.js",
+  "dependencies": {
+    "@slack/client": "^4.8.0",
+    "@slack/events-api": "^2.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edudbermejo/PResto-slackbot.git"
+  },
+  "keywords": [
+    "slack",
+    "pull",
+    "request",
+    "pr",
+    "bot"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/edudbermejo/PResto-slackbot/issues"
+  },
+  "homepage": "https://github.com/edudbermejo/PResto-slackbot#readme"
+}

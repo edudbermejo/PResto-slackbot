@@ -1,21 +1,33 @@
-import { addCommandRegex, addPR } from 'addPR';
-import { listCommandRegex, listPRs } from 'addPR';
+const { addCommandRegex, addPR } = require('./actions/addPR');
+const { listCommandRegex, listPRs } = require('./actions/listPRs');
+const { help } = require('./actions/help');
+const { createEventAdapter } = require('@slack/events-api');
+const { WebClient } = require('@slack/client');
 
-const { RTMClient, WebClient } = require('@slack/client');
-const token = process.env.SLACK_ACCESS_TOKEN
+const token = process.env.SLACK_ACCESS_TOKEN;
+const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET);
+const port = process.env.PORT || 3000;
 const web = new WebClient(token);
-const rtm = new RTMClient(token);
+let prsList = {};
 
-rtm.start();
+// Main engine of PResto
+slackEvents.on('app_mention', (event) => {
 
-rtm.on('message', (message) => {
-  // For structure of `message`, see https://api.slack.com/events/message
+  console.log(event);
 
-  if (message.text.regex(addCommandRegex)) {
-    addPR(message);
-  } else if (message.text.regex(listCommandRegex)) { 
-    listPRs(message);
+  if (addCommandRegex.test(event.text)) {
+    addPR(web, prsList, event);
+  } else if (listCommandRegex.test(event.text)) { 
+    listPRs(web, prsList, event);
   } else {
-    // TODO print correct way of invoking PResto
+    help(web, event.channel);
   }
+});
+
+// Handle errors (see `errorCodes` export)
+slackEvents.on('error', console.error);
+
+// Start a basic HTTP server
+slackEvents.start(port).then(() => {
+  console.log(`server listening on port ${port}`);
 });
