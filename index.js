@@ -10,10 +10,20 @@ const port = process.env.PORT || 3000;
 const web = new WebClient(token);
 let prsList = {};
 
+const resetRegex = () => {
+  addCommandRegex.lastIndex = 0;
+  listCommandRegex.lastIndex = 0;
+}
+
 // Main engine of PResto
 slackEvents.on('app_mention', (event) => {
 
   console.log(event);
+
+  // If it's and edited post PResto shouldn't do anything
+  if(event.edited) {
+    return;
+  }
 
   if (addCommandRegex.test(event.text)) {
     addPR(web, prsList, event);
@@ -22,6 +32,8 @@ slackEvents.on('app_mention', (event) => {
   } else {
     help(web, event.channel);
   }
+
+  resetRegex();
 });
 
 // Handle errors (see `errorCodes` export)
