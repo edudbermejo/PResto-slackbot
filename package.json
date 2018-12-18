@@ -5,7 +5,8 @@
   "main": "index.js",
   "dependencies": {
     "@slack/client": "^4.8.0",
-    "@slack/events-api": "^2.1.1"
+    "@slack/events-api": "^2.1.1",
+    "express": "^4.16.4"
   },
   "devDependencies": {},
   "scripts": {

@@ -3,7 +3,9 @@ const { listCommandRegex, listPRs } = require('./actions/listPRs');
 const { help } = require('./actions/help');
 const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/client');
+const express = require('express');
 
+const app = express();
 const token = process.env.SLACK_ACCESS_TOKEN;
 const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 const port = process.env.PORT || 3000;
@@ -14,6 +16,8 @@ const resetRegex = () => {
   addCommandRegex.lastIndex = 0;
   listCommandRegex.lastIndex = 0;
 }
+
+app.use('/slack/events', slackEvents.expressMiddleware());
 
 // Main engine of PResto
 slackEvents.on('app_mention', (event) => {
@@ -36,10 +40,6 @@ slackEvents.on('app_mention', (event) => {
   resetRegex();
 });
 
-// Handle errors (see `errorCodes` export)
 slackEvents.on('error', console.error);
 
-// Start a basic HTTP server
-slackEvents.start(port).then(() => {
-  console.log(`server listening on port ${port}`);
-});
+app.listen(port, () => console.log(`Server listening on port ${port}`));
