@@ -1,15 +1,17 @@
+const { createEventAdapter } = require('@slack/events-api');
+const { WebClient } = require('@slack/client');
+const { createMessageAdapter } = require('@slack/interactive-messages');
+const express = require('express');
+
 const { addCommandRegex, addPR } = require('./actions/addPR');
 const { listCommandRegex, listPRs } = require('./actions/listPRs');
 const { help } = require('./actions/help');
-const { createEventAdapter } = require('@slack/events-api');
-const { WebClient } = require('@slack/client');
-const express = require('express');
 
 const app = express();
-const token = process.env.SLACK_ACCESS_TOKEN;
 const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET);
+const slackInteractions = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
+const web = new WebClient(process.env.SLACK_ACCESS_TOKEN);
 const port = process.env.PORT || 3000;
-const web = new WebClient(token);
 let prsList = {};
 
 const resetRegex = () => {
@@ -18,6 +20,8 @@ const resetRegex = () => {
 }
 
 app.use('/slack/events', slackEvents.expressMiddleware());
+app.use('/slack/actions', slackInteractions.expressMiddleware());
+
 
 // Main engine of PResto
 slackEvents.on('app_mention', (event) => {
