@@ -3,9 +3,10 @@ const { WebClient } = require('@slack/client');
 const { createMessageAdapter } = require('@slack/interactive-messages');
 const express = require('express');
 
-const { addCommandRegex, addPR } = require('./actions/addPR');
-const { listCommandRegex, listPRs } = require('./actions/listPRs');
-const { help } = require('./actions/help');
+const { addCommandRegex, addPR } = require('./commands/addPR');
+const { listCommandRegex, listPRs } = require('./commands/listPRs');
+const { help } = require('./commands/help');
+const { updateStatus } = require('./actions/updatestatus');
 
 const app = express();
 const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET);
@@ -45,5 +46,9 @@ slackEvents.on('app_mention', (event) => {
 });
 
 slackEvents.on('error', console.error);
+
+// Message interactions for PResto
+slackInteractions.action('welcome_button', updateStatus);
+
 
 app.listen(port, () => console.log(`Server listening on port ${port}`));

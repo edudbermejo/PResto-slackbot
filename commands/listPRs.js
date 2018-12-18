@@ -20,13 +20,13 @@ const basicPR = {
 
 const possibleActions = {
   open: {
-    "name": "praction",
+    "name": "updatestatus",
     "text": "Review",
     "type": "button",
     "value": "review"
   },
   reviewing: {
-    "name": "praction",
+    "name": "updatestatus",
     "text": "Mark As Approved",
     "type": "button",
     "value": "markAsApproved"
