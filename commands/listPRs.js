@@ -11,22 +11,22 @@ const basicSlackPRsMessage = {
 };
 
 const basicPR = {
-  "text": "url + opened by + openedBy",
-  "callback_id": "url",
-  "color": "This depends on the status",
+  "text": "_url + opened by + openedBy_",
+  "callback_id": "update_status",
+  "color": "_This depends on the status_",
   "attachment_type": "default",
   "actions": []
 };
 
 const possibleActions = {
   open: {
-    "name": "updatestatus",
+    "name": "_PRurl_",
     "text": "Review",
     "type": "button",
     "value": "review"
   },
   reviewing: {
-    "name": "updatestatus",
+    "name": "_PRurl_",
     "text": "Mark As Approved",
     "type": "button",
     "value": "markAsApproved"
@@ -46,9 +46,10 @@ const buildPRMessage = prsList => {
   prsList.forEach(prObject => {
     let pullRequest = Object.assign({}, basicPR);
     pullRequest.text = `${prObject.url} opened by <@${prObject.openedBy}>`;
-    pullRequest.callback_id = prObject.url;
     pullRequest.color = colors[prObject.status];
-    pullRequest.actions = [possibleActions[prObject.status]];
+    let action = Object.assign({}, possibleActions[prObject.status]);
+    action.name = prObject.url;
+    pullRequest.actions = [action];
     attachmentsPR.push(pullRequest);
   });
   finalMessage.attachments = attachmentsPR;
@@ -60,7 +61,6 @@ exports.listPRs = (web, prsList, message) => {
     postHiddenMessage({ web, skelleton: { text: `There is no opened pull requests in your channel. Seems like you are up to date! Congrats!` }, channel: message.channel, user: message.user });
   } else {
     const answer = buildPRMessage(prsList[message.channel])
-    console.log(answer);
     postHiddenMessage({ web, skelleton: answer, channel: message.channel, user: message.user });
   }
 };

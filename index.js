@@ -6,7 +6,7 @@ const express = require('express');
 const { addCommandRegex, addPR } = require('./commands/addPR');
 const { listCommandRegex, listPRs } = require('./commands/listPRs');
 const { help } = require('./commands/help');
-const { updateStatus } = require('./actions/updatestatus');
+const { updateStatus } = require('./actions/updateStatus');
 
 const app = express();
 const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET);
@@ -27,8 +27,6 @@ app.use('/slack/actions', slackInteractions.expressMiddleware());
 // Main engine of PResto
 slackEvents.on('app_mention', (event) => {
 
-  console.log(event);
-
   // If it's and edited post PResto shouldn't do anything
   if(event.edited) {
     return;
@@ -48,7 +46,7 @@ slackEvents.on('app_mention', (event) => {
 slackEvents.on('error', console.error);
 
 // Message interactions for PResto
-slackInteractions.action('welcome_button', updateStatus);
+slackInteractions.action('update_status', (actionEvent, respond) => updateStatus({actionEvent, prsList, respond}));
 
 
 app.listen(port, () => console.log(`Server listening on port ${port}`));
