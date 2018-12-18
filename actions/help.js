@@ -5,5 +5,5 @@ Hi! I am a bot for slack that will help your team deal with Pull Requests. I can
 `
 
 exports.help = (web, channel) => {
-    web.chat.postMessage({text: helpMessage, channel}).then(res => console.log('message sent with time ' + res.ts)).catch(console.error);
+  web.chat.postMessage({ text: helpMessage, channel }).then(res => console.log('message sent with time ' + res.ts)).catch(console.error);
 }
