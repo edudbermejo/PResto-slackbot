@@ -12,5 +12,6 @@ exports.addPR = (web, prsList, message) => {
     actualPRs.push({ url: newPR, status: 'open', openedBy: message.user });
     prsList[message.channel] = actualPRs;
     web.chat.postMessage({ text: `Presto! PR ${newPR} added to the list. Your channel has ${actualPRs.length} pending PRs.`, channel: message.channel });
+    console.log(prsList);
   }
 }

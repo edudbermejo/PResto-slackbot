@@ -46,7 +46,7 @@ slackEvents.on('app_mention', (event) => {
 slackEvents.on('error', console.error);
 
 // Message interactions for PResto
-slackInteractions.action('update_status', (actionEvent, respond) => updateStatus({actionEvent, prsList, respond}));
+slackInteractions.action('update_status', (actionEvent, respond) => updateStatus({actionEvent, prsList, respond, web}));
 
 
 app.listen(port, () => console.log(`Server listening on port ${port}`));
