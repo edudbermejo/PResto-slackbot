@@ -23,15 +23,13 @@ exports.updateStatus = ({actionEvent, prsList, respond, web}) => {
 
 const sendChannelPRApprovedMessage = async ({actionEvent, PRobject, web}) => {
   let prowner = `<@${PRobject.openedBy}>`;
-  const isActive = (await web.users.getPresence({ user: PRobject.openedBy })).presence === 'active';
+  const userPR = PRobject.openedBy;
+  const isActive = (await web.users.getPresence({ userPR })).presence === 'active';
 
+  // If the user is Active she get's a mention in slack, otherwise we just use her real name.
   if (!isActive) {
-    const dndInfo = await web.dnd.info(PRobject.openedBy);
-
-    // If the user is Active or she has the dnd mode enabled she get's a mention in slack, otherwise we just use her real name.
-    if(!dndInfo.dnd_enabled) {
-      const { user: {realname: userBy }} = await web.user.info(PRobject.openedBy);
-    }
+    const { user } = await web.users.info({ user: userPR });
+    prowner = user.real_name;
   }
 
   web.chat.postMessage({ text: `PR ${PRobject.url} by ${prowner} was approved by <@${actionEvent.user.id}> `, channel: actionEvent.channel.id }).catch(console.error);
