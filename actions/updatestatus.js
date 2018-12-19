@@ -27,6 +27,7 @@ const sendChannelPRApprovedMessage = async ({actionEvent, PRobject, web}) => {
   if (!isActive) {
     const dndInfo = await web.dnd.info(PRobject.openedBy);
 
+    // If the user is Active or she has the dnd mode enabled she get's a mention in slack, otherwise we just use her real name.
     if(!dndInfo.dnd_enabled) {
       const { user: {realname: userBy }} = await web.user.info(PRobject.openedBy);
     }
