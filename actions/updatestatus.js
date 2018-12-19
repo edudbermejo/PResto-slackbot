@@ -15,25 +15,22 @@ exports.updateStatus = ({actionEvent, prsList, respond, web}) => {
   respond({text:replyText});
   
   if (actionEvent.actions[0].value === 'markAsApproved') {
-    sendUserPRApprovedMessage({actionEvent, PRobject, web}) 
+    sendChannelPRApprovedMessage({actionEvent, PRobject, web}) 
   }
   console.log(prsList);
 }
 
-const sendUserPRApprovedMessage = async ({actionEvent, PRobject, web}) => {
-  const { presence: userPresence } = await web.users.getPresence({user: PRobject.openedBy});
-  const isActive = userPresence === 'active';
-  let textToChannel = '';
-  let dndInfo = {};
+const sendChannelPRApprovedMessage = async ({actionEvent, PRobject, web}) => {
+  let prowner = `<@${PRobject.openedBy}>`;
+  const isActive = (await web.users.getPresence({ user: PRobject.openedBy })).presence === 'active';
+
   if (!isActive) {
-    dndInfo = await web.dnd.info(PRobject.openedBy);
-  }
-  if(isActive || dndInfo.dnd_enabled) {
-    textToChannel = `PR ${PRobject.url} by <@${PRobject.openedBy}> was approved by <@${actionEvent.user.id}> `;
-  } else {
-    const { user: {realname: userName }} = await web.user.info(PRobject.openedBy);
-    textToChannel = `PR ${PRobject.url} by <@${userName}> was approved by <@${actionEvent.user.id}> `;
+    const dndInfo = await web.dnd.info(PRobject.openedBy);
+
+    if(!dndInfo.dnd_enabled) {
+      const { user: {realname: userBy }} = await web.user.info(PRobject.openedBy);
+    }
   }
 
-  web.chat.postMessage({ text: textToChannel, channel: actionEvent.channel.id }).catch(console.error);
+  web.chat.postMessage({ text: `PR ${PRobject.url} by ${prowner} was approved by <@${actionEvent.user.id}> `, channel: actionEvent.channel.id }).catch(console.error);
 }
