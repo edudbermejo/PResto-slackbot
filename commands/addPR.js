@@ -4,6 +4,7 @@ exports.addCommandRegex = /add /g;
 exports.addPR = (web, prsList, message) => {
   let actualPRs = prsList[message.channel] || [];
   PRurlRegex.lastIndex = 0;
+  
   if (!PRurlRegex.test(message.text)) {
     web.chat.postMessage({ text: `Hey you! If you want to add a PR the message has to contain the entire url for it. Try again, I will wait for you.`, channel: message.channel });
   } else {

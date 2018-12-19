@@ -2,6 +2,7 @@ exports.updateStatus = ({actionEvent, prsList, respond, web}) => {
   const PRurl = actionEvent.actions[0].name;
   let replyText = '';
   let PRobject = {};
+  
   if (actionEvent.actions[0].value === 'review') {
     PRobject = prsList[actionEvent.channel.id].find(element => element.url === PRurl);
     PRobject.status = 'reviewing';

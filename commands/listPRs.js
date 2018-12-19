@@ -43,6 +43,7 @@ const postHiddenMessage = ({ web, skelleton, channel, user }) => {
 const buildPRMessage = prsList => {
   let finalMessage = Object.assign({}, basicSlackPRsMessage);
   let attachmentsPR = [];
+
   prsList.forEach(prObject => {
     let pullRequest = Object.assign({}, basicPR);
     pullRequest.text = `${prObject.url} opened by <@${prObject.openedBy}>`;
@@ -52,11 +53,13 @@ const buildPRMessage = prsList => {
     pullRequest.actions = [action];
     attachmentsPR.push(pullRequest);
   });
+
   finalMessage.attachments = attachmentsPR;
   return finalMessage;
 }
 
 exports.listPRs = (web, prsList, message) => {
+  
   if (!prsList[message.channel] || prsList[message.channel].length === 0) {
     postHiddenMessage({ web, skelleton: { text: `There is no opened pull requests in your channel. Seems like you are up to date! Congrats!` }, channel: message.channel, user: message.user });
   } else {
