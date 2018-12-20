@@ -15,7 +15,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node -v && ls -l  && ls -l ./actions && node index"
+    "start": "node index"
   },
   "repository": {
     "type": "git",
