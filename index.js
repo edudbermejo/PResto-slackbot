@@ -12,7 +12,7 @@ const app = express();
 const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 const slackInteractions = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
 const web = new WebClient(process.env.SLACK_ACCESS_TOKEN);
-const port = 3000;
+const port = process.env.PORT || 3000;
 let prsList = {};
 
 const resetRegex = () => {
