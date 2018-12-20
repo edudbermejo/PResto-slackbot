@@ -24,7 +24,8 @@ exports.updateStatus = ({actionEvent, prsList, respond, web}) => {
 const sendChannelPRApprovedMessage = async ({actionEvent, PRobject, web}) => {
   let prowner = `<@${PRobject.openedBy}>`;
   const userPR = PRobject.openedBy;
-  const isActive = (await web.users.getPresence({ userPR })).presence === 'active';
+  const userPresenceInfo = await web.users.getPresence({ userPR })
+  const isActive = userPresenceInfo.presence === 'active';
 
   // If the user is Active she get's a mention in slack, otherwise we just use her real name.
   if (!isActive) {
