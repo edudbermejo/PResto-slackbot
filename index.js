@@ -7,6 +7,7 @@ const { addCommandRegex, addPR } = require('./commands/add-pr');
 const { listCommandRegex, listPRs } = require('./commands/list-prs');
 const { help } = require('./commands/help');
 const { updateStatus } = require('./actions/update-status');
+const { setScheduleForPRs } = require('./batch/ping-prs');
 
 const app = express();
 const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET);
@@ -23,6 +24,7 @@ const resetRegex = () => {
 app.use('/slack/events', slackEvents.expressMiddleware());
 app.use('/slack/actions', slackInteractions.expressMiddleware());
 
+setScheduleForPRs({web, prsList});
 
 // Main engine of PResto
 slackEvents.on('app_mention', (event) => {
