@@ -61,7 +61,7 @@ const buildPRMessage = prsList => {
 exports.listPRs = (web, prsList, message) => {
   
   if (!prsList[message.channel] || prsList[message.channel].length === 0) {
-    postHiddenMessage({ web, skelleton: { text: `There is no opened pull requests in your channel. Seems like you are up to date! Congrats!` }, channel: message.channel, user: message.user });
+    postHiddenMessage({ web, skelleton: { text: `There is no opened pull requests in your channel. Seems like you are up to date! Congrats! :party: :hbcheart:` }, channel: message.channel, user: message.user });
   } else {
     const answer = buildPRMessage(prsList[message.channel])
     postHiddenMessage({ web, skelleton: answer, channel: message.channel, user: message.user });

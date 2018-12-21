@@ -6,7 +6,7 @@ exports.updateStatus = ({actionEvent, prsList, respond, web}) => {
   if (actionEvent.actions[0].value === 'review') {
     PRobject = prsList[actionEvent.channel.id].find(element => element.url === PRurl);
     PRobject.status = 'reviewing';
-    replyText = `PR ${PRurl} marked as *Reviewing*. Please don't forget to update the status once you approved it. If any comments, please reach <@${PRobject.openedBy}>.`
+    replyText = `PR ${PRurl} marked as *Reviewing*. Please don't forget to update the status once you approved it :brain:. If any comments, please reach <@${PRobject.openedBy}>.`
   } else if (actionEvent.actions[0].value === 'markAsApproved') {
     PRobject = prsList[actionEvent.channel.id].find(element => element.url === PRurl);
     prsList[actionEvent.channel.id] = prsList[actionEvent.channel.id].filter(element => element.url !== PRurl);
@@ -33,5 +33,5 @@ const sendChannelPRApprovedMessage = async ({actionEvent, PRobject, web}) => {
     prowner = user.real_name;
   }
 
-  web.chat.postMessage({ text: `PR ${PRobject.url} by ${prowner} was approved by <@${actionEvent.user.id}> `, channel: actionEvent.channel.id }).catch(console.error);
+  web.chat.postMessage({ text: `PR ${PRobject.url} by ${prowner} was approved by <@${actionEvent.user.id}>  :parrot:`, channel: actionEvent.channel.id }).catch(console.error);
 }
