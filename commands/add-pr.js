@@ -1,19 +1,19 @@
-const PRurlRegex = /https:\/\/github\.com\/[\w|-]+\/[\w|-]+\/pull\/\d+/;
+const repoRegex = /https:\/\/github\.com\/[\w|-]+\/[\w|-]+\/pull\/\d+/; // TODO repositorio regex
 exports.addCommandRegex = /add /g;
 
-exports.addPR = async (web, prsList, message) => {
-  let actualPRs = prsList[message.channel] || [];
+exports.addRepo = ({watchedRepos, req, res}) => {
+  let info = req.payload;
+  let currentRepos = watchedRepos[info.channel_id] || [];
   PRurlRegex.lastIndex = 0;
   
-  if (!PRurlRegex.test(message.text)) {
-    web.chat.postMessage({ text: `Hey you! If you want to add a PR the message has to contain the entire url for it. Try again, I will wait for you. :slowparrot:`, channel: message.channel });
+  if (!repoRegex.test(message.text)) {
+    res.json({ text: `Hey you! If you want to add a repository the message has to contain the entire url for it. Try again, I will wait for you. :slowparrot:`});
   } else {
-    PRurlRegex.lastIndex = 0;
-    const newPR = PRurlRegex.exec(message.text)[0];
-    const userInfo = await web.users.info({user: message.user});
-    actualPRs.push({ url: newPR, status: 'open', openedBy: message.user, openedByAvatar: userInfo.user.profile.image_32 });
-    prsList[message.channel] = actualPRs;
-    web.chat.postMessage({ text: `Presto! PR ${newPR} added to the list. Your channel has ${actualPRs.length} pending PRs. :loading: `, channel: message.channel });
+    const newRepo = repoRegex.exec(message.text)[0];
+    currentRepos.push(newRepo);
+    watchedRepos[info.channel_id] = currentRepos;
+    res.json({ text: `Presto! repository ${newRepo} added to the list of watched repository for this channel. Your channel has ${currentRepos.length} watched repositories. :eye: `});
     console.log(prsList);
   }
+  repoRegex.lastIndex = 0;
 }

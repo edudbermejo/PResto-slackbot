@@ -14,7 +14,7 @@ const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET);
 const slackInteractions = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
 const web = new WebClient(process.env.SLACK_ACCESS_TOKEN);
 const port = process.env.PORT || 3000;
-let prsList = {};
+let watchedRepos = {};
 
 const resetRegex = () => {
   addCommandRegex.lastIndex = 0;
@@ -24,31 +24,31 @@ const resetRegex = () => {
 app.use('/slack/events', slackEvents.expressMiddleware());
 app.use('/slack/actions', slackInteractions.expressMiddleware());
 
-setScheduleForPRs({web, prsList});
+setScheduleForPRs({web, prsList: watchedRepos});
 
 // Main engine of PResto
 slackEvents.on('app_mention', (event) => {
-
-  // If it's and edited post PResto shouldn't do anything
-  if(event.edited) {
-    return;
-  }
-
-  if (addCommandRegex.test(event.text)) {
-    addPR(web, prsList, event);
-  } else if (listCommandRegex.test(event.text)) { 
-    listPRs(web, prsList, event);
-  } else {
-    help(web, event.channel);
-  }
-
-  resetRegex();
+  help(web, event.channel);
 });
 
 slackEvents.on('error', console.error);
 
 // Message interactions for PResto
-slackInteractions.action('update_status', (actionEvent, respond) => updateStatus({actionEvent, prsList, respond, web}));
+slackInteractions.action('update_status', (actionEvent, respond) => updateStatus({actionEvent, prsList: watchedRepos, respond, web}));
+
+app.post('/commands', (req, res) => {
+  const command = req.body.command;
+  let answer = {};
+  if (addCommandRegex.test(command)) {
+    answer = addPR({prsList: watchedRepos, req, res});
+  } else if (listCommandRegex.test(command)) { 
+    answer = listPRs({prsList: watchedRepos, payload: req.body, res});
+  }
+
+  resetRegex();
+  
+  return answer;
+})
 
 
 app.listen(port, () => console.log(`Server listening on port ${port}`));
