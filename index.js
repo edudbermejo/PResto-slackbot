@@ -3,7 +3,7 @@ const { WebClient } = require('@slack/client');
 const { createMessageAdapter } = require('@slack/interactive-messages');
 const express = require('express');
 
-const { addCommandRegex, addPR: addRepo } = require('./commands/add-repo');
+const { addCommandRegex, addRepo } = require('./commands/add-repo');
 const { listCommandRegex, listPRs } = require('./commands/list-prs');
 const { help } = require('./commands/help');
 const { updateStatus } = require('./actions/update-status');
