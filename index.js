@@ -3,7 +3,7 @@ const { WebClient } = require('@slack/client');
 const { createMessageAdapter } = require('@slack/interactive-messages');
 const express = require('express');
 
-const { addCommandRegex, addPR } = require('./commands/add-pr');
+const { addCommandRegex, addPR: addRepo } = require('./commands/add-repo');
 const { listCommandRegex, listPRs } = require('./commands/list-prs');
 const { help } = require('./commands/help');
 const { updateStatus } = require('./actions/update-status');
@@ -40,7 +40,7 @@ app.post('/commands', (req, res) => {
   const command = req.body.command;
   let answer = {};
   if (addCommandRegex.test(command)) {
-    answer = addPR({prsList: watchedRepos, req, res});
+    answer = addRepo({prsList: watchedRepos, req, res});
   } else if (listCommandRegex.test(command)) { 
     answer = listPRs({prsList: watchedRepos, payload: req.body, res});
   }
