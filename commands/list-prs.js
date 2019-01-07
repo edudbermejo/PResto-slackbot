@@ -91,13 +91,14 @@ exports.listPRs = async ({web, db, channel, res}) => {
   if (channel) {
     if (!channelObject || channelObject.repositories.length === 0) {
       res.json({ text: `Your channel is currently not watching any repositories. Please use */watchrepo* command to start watching some. :eye:` })
-      return res
     } else {
+      res.json()
       const message = await buildPRMessage(channelObject.repositories)
       message.channel = channel
       web.chat.postMessage(message)
     }
   } else {
+    res.json()
     if(channelObject.length !== 0) {
       channelObject.forEach(async ({repositories: channelRepos}) => {
         if (channelRepos.length !== 0) {
@@ -108,4 +109,5 @@ exports.listPRs = async ({web, db, channel, res}) => {
       })
     }
   }
+  return res
 }
