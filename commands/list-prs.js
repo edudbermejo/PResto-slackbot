@@ -1,72 +1,108 @@
-exports.listCommandRegex = /list/g;
+exports.listCommandRegex = /listprs/
 
-const colors = {
-  open: "#17ed62",
-  reviewing: "#8427d1"
-}
 
-const basicSlackPRsMessage = {
-  "text": "This is the list of opened PRs for your team",
-  "attachments": []
-};
+const { GraphQLClient } = require('graphql-request')
 
-const basicPR = {
-  "text": "_url_",
-  "author_name": "_openedBy_",
-  "callback_id": "update_status",
-  "color": "_This depends on the status_",
-  "attachment_type": "default",
-  "actions": []
-};
+const githubAPIEndpoint = 'https://api.github.com/graphql'
 
-const possibleActions = {
-  open: {
-    "name": "_PRurl_",
-    "text": "Review",
-    "type": "button",
-    "value": "review"
+const graphClient = new GraphQLClient(githubAPIEndpoint, {
+  headers: {
+    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
   },
-  reviewing: {
-    "name": "_PRurl_",
-    "text": "Mark As Approved",
-    "type": "button",
-    "value": "markAsApproved"
+})
+
+const prColors = {
+  clean: "#17ed62",
+  dirty: "#8427d1"
+}
+
+const buildPRMessage = (repos) => {
+  let repositoriesPromises = []
+  let answer = {
+    text: "This is the list of opened PRs for your team",
+    attachments: []
   }
-};
+  repos.map(repo => {
+    const repoPromise = graphClient.request(`{
+      repository(owner: "saksdirect", name: "${repo}") {
+        pullRequests (first: 10, states: OPEN){
+          nodes {
+            repository {
+              name
+            },
+            title,
+            labels (first: 5) {
+              nodes {
+                name
+              }
+            },
+            author {
+              avatarUrl,
+              login
+            },
+            reviews (first: 1, states: [CHANGES_REQUESTED]){
+              nodes {
+                id
+              }
+            }
+            url,
+            mergeable
+          }
+        }
+      }
+    }`)
 
-const postHiddenMessage = ({ web, skelleton, channel, user }) => {
-  const response = skelleton;
-  response.channel = channel;
-  response.user = user;
-  web.chat.postEphemeral(response);
+    repositoriesPromises.push(repoPromise)
+  })
+
+  return Promise.all(repositoriesPromises).then(repositories => {
+    repositories.map(repositoryContainer => {
+      const repository = repositoryContainer.repository
+      if (repository.pullRequests.nodes.length !== 0) {
+        repository.pullRequests.nodes.map((pullRequest) => {
+          if ((!pullRequest.labels.nodes.some(label=> label.name === 'donotmerge' || label.name === 'WIP'))
+            && pullRequest.mergeable !== 'MERGEABLE') {
+            const hasChangesRequested = pullRequest.reviews.nodes.length !== 0
+            const prObject = {
+              title: pullRequest.title,
+              title_link: pullRequest.url,
+              text: pullRequest.repository.name,
+              author_name: pullRequest.author.login,
+              author_icon: pullRequest.author.avatarUrl,
+              color: hasChangesRequested ? prColors.dirty : prColors.clean
+            }
+            answer.attachments.push(prObject)
+          }
+        })
+      }
+    })
+
+    return answer
+  })
 }
 
-const buildPRMessage = ({prsList, web}) => {
-  let finalMessage = Object.assign({}, basicSlackPRsMessage);
-  let attachmentsPR = [];
+exports.listPRs = async ({web, watchedRepos, channel, res}) => {
 
-  prsList.forEach(prObject => {
-    let pullRequest = Object.assign({}, basicPR);
-    pullRequest.text = `${prObject.url}`;
-    pullRequest.author_name = `<@${prObject.openedBy}>`;
-    pullRequest.author_icon = `${prObject.openedByAvatar}`;
-    pullRequest.color = colors[prObject.status];
-    let action = Object.assign({}, possibleActions[prObject.status]);
-    action.name = prObject.url;
-    pullRequest.actions = [action];
-    attachmentsPR.push(pullRequest);
-  });
-
-  finalMessage.attachments = attachmentsPR;
-  return finalMessage;
-}
-
-exports.listPRs = (web, prsList, message) => {
-  
-  if (!prsList[message.channel] || prsList[message.channel].length === 0) {
-    postHiddenMessage({ web, skelleton: { text: `There is no opened pull requests in your channel. Seems like you are up to date! Congrats! :party: :hbcheart:` }, channel: message.channel, user: message.user });
+  if (channel) {
+    if (!watchedRepos[channel] || watchedRepos[channel].length === 0) {
+      res.json({ text: `Your channel is currently not watching any repositories. Please use */watchrepo* command to start watching some. :eye:` })
+      return res
+    } else {
+      const message = await buildPRMessage(watchedRepos[channel])
+      message.channel = channel
+      web.chat.postMessage(message)
+    }
   } else {
-    const answer = buildPRMessage({prsList: prsList[message.channel], web})
-    postHiddenMessage({ web, skelleton: answer, channel: message.channel, user: message.user });
+    let reposEntries = Object.entries(watchedRepos)
+    if(reposEntries.length !== 0) {
+      reposEntries.forEach(async channelPair => {
+        const [channel, channelRepos] = channelPair
+        if (channelRepos.length !== 0) {
+          const message = await buildPRMessage(channelRepos)
+          message.channel = channel
+          web.chat.postMessage(message)
+        }
+      })
+    }
   }
-};
+}
