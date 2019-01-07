@@ -6,7 +6,6 @@ const bodyParser = require('body-parser')
 const { addCommandRegex, addRepo } = require('./commands/add-repo')
 const { listCommandRegex, listPRs } = require('./commands/list-prs')
 const { help } = require('./commands/help')
-const { updateStatus } = require('./actions/update-status')
 const { setScheduleForPRs } = require('./batch/ping-prs')
 
 const app = express()
