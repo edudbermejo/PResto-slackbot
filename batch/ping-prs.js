@@ -7,6 +7,6 @@ rule.hour = [14, 19]
 rule.minute = 0
 //rule.second = [0, 15, 30, 45] -> for debugging purposes 
 
-exports.setScheduleForPRs = ({web, watchedRepos}) => {
-  schedule.scheduleJob(rule, () => listPRs({web, watchedRepos}))
+exports.setScheduleForPRs = ({web, db}) => {
+  schedule.scheduleJob(rule, () => listPRs({web, db}))
 }

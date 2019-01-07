@@ -7,12 +7,12 @@ const { addCommandRegex, addRepo } = require('./commands/add-repo')
 const { listCommandRegex, listPRs } = require('./commands/list-prs')
 const { help } = require('./commands/help')
 const { setScheduleForPRs } = require('./batch/ping-prs')
+const { db } = require('./database/mongo')
 
 const app = express()
 const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET)
 const web = new WebClient(process.env.SLACK_ACCESS_TOKEN)
 const port = process.env.PORT || 3000
-let watchedRepos = {}
 
 const resetRegex = () => {
   addCommandRegex.lastIndex = 0
@@ -21,7 +21,7 @@ const resetRegex = () => {
 
 app.use('/slack/events', slackEvents.expressMiddleware())
 
-setScheduleForPRs({web, watchedRepos})
+setScheduleForPRs({web, db})
 
 //When mention display help documentation
 slackEvents.on('app_mention', (event) => {
@@ -36,9 +36,9 @@ app.post('/commands/*', (req, res, payload) => {
   let answer = {}
 
   if (addCommandRegex.test(command)) {
-    answer = addRepo({watchedRepos, req, res})
+    answer = addRepo({db, req, res})
   } else if (listCommandRegex.test(command)) { 
-    answer = listPRs({watchedRepos, res, web, channel: req.body.channel_id})
+    answer = listPRs({db, res, web, channel: req.body.channel_id})
   }
 
   resetRegex()

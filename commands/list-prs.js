@@ -77,26 +77,29 @@ const buildPRMessage = (repos) => {
       }
     })
 
+    if (answer.attachments.length == 0) {
+      answer.text = "Yey! There is no unwatched PRs for your channel! :party: :partyparrot:"
+    }
+
     return answer
   })
 }
 
-exports.listPRs = async ({web, watchedRepos, channel, res}) => {
+exports.listPRs = async ({web, db, channel, res}) => {
+  const channelObject = await db.retrieve(channel)
 
   if (channel) {
-    if (!watchedRepos[channel] || watchedRepos[channel].length === 0) {
+    if (!channelObject || channelObject.repositories.length === 0) {
       res.json({ text: `Your channel is currently not watching any repositories. Please use */watchrepo* command to start watching some. :eye:` })
       return res
     } else {
-      const message = await buildPRMessage(watchedRepos[channel])
+      const message = await buildPRMessage(channelObject.repositories)
       message.channel = channel
       web.chat.postMessage(message)
     }
   } else {
-    let reposEntries = Object.entries(watchedRepos)
-    if(reposEntries.length !== 0) {
-      reposEntries.forEach(async channelPair => {
-        const [channel, channelRepos] = channelPair
+    if(channelObject.length !== 0) {
+      channelObject.forEach(async ({repositories: channelRepos}) => {
         if (channelRepos.length !== 0) {
           const message = await buildPRMessage(channelRepos)
           message.channel = channel
