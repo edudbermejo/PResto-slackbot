@@ -1,6 +1,6 @@
 const { Schema } = require('mongoose')
 
 exports.channelSchema = new Schema({
-  _id:  String,
+  name:  String,
   repositories: [String]
 })

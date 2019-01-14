@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 
 const { addCommandRegex, addRepo } = require('./commands/add-repo')
 const { listCommandRegex, listPRs } = require('./commands/list-prs')
+const { unwatchCommandRegex, unwatchRepo } = require('./commands/unwatch-repo')
 const { help } = require('./commands/help')
 const { setScheduleForPRs } = require('./batch/ping-prs')
 const { db } = require('./database/mongo')
@@ -35,7 +36,9 @@ app.post('/commands/*', (req, res, payload) => {
   const command = req.body.command
   let answer = {}
 
-  if (addCommandRegex.test(command)) {
+  if (unwatchCommandRegex.test(command)) { 
+    answer = unwatchRepo({db, req, res})
+  } else if (addCommandRegex.test(command)) {
     answer = addRepo({db, req, res})
   } else if (listCommandRegex.test(command)) { 
     answer = listPRs({db, res, web, channel: req.body.channel_id})

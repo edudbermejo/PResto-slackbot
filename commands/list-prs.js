@@ -61,7 +61,7 @@ const buildPRMessage = (repos) => {
       if (repository.pullRequests.nodes.length !== 0) {
         repository.pullRequests.nodes.map((pullRequest) => {
           if ((!pullRequest.labels.nodes.some(label=> label.name === 'donotmerge' || label.name === 'WIP'))
-            && pullRequest.mergeable !== 'MERGEABLE') {
+            && pullRequest.mergeable !== 'CONFLICTING') {
             const hasChangesRequested = pullRequest.reviews.nodes.length !== 0
             const prObject = {
               title: pullRequest.title,
@@ -78,7 +78,7 @@ const buildPRMessage = (repos) => {
     })
 
     if (answer.attachments.length == 0) {
-      answer.text = "Yey! There is no unwatched PRs for your channel! :party: :partyparrot:"
+      answer.text = "Yey! There is no unattended PRs for your channel! :party: :partyparrot:"
     }
 
     return answer

@@ -8,16 +8,21 @@ const Channel = mongoose.model('Channel', channelSchema)
 const retrieve = async (channelId) => {
   let value = {}
   if (channelId) {
-    value = await Channel.findOne({_id: channelId}).exec()
+    value = await Channel.findOne({name: channelId}).exec()
   } else {
-    value = await Channel.findOne().exec()
+    value = await Channel.finds().exec()
   }
   return value
 }
 
-const persist = ({_id, repositories}) => {
-  const channel = new Channel({_id, repositories})
-  Channel.findOneAndUpdate(_id, channel, {upsert: true})
+const persist = (channel) => {
+  let channelToPersist = channel
+  if (!channel._id) {
+    channelToPersist = new Channel({name: channel.name, repositories: channel.repositories})
+    Channel.create(channelToPersist)
+  } else {
+    Channel.findOneAndUpdate({name: channelToPersist.name}, channelToPersist).exec()
+  }
 }
 
 exports.db = {
