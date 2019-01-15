@@ -1,54 +1,53 @@
-const { createEventAdapter } = require('@slack/events-api');
-const { WebClient } = require('@slack/client');
-const { createMessageAdapter } = require('@slack/interactive-messages');
-const express = require('express');
+const { createEventAdapter } = require('@slack/events-api')
+const { WebClient } = require('@slack/client')
+const express = require('express')
+const bodyParser = require('body-parser')
 
-const { addCommandRegex, addPR } = require('./commands/add-pr');
-const { listCommandRegex, listPRs } = require('./commands/list-prs');
-const { help } = require('./commands/help');
-const { updateStatus } = require('./actions/update-status');
-const { setScheduleForPRs } = require('./batch/ping-prs');
+const { addCommandRegex, addRepo } = require('./commands/add-repo')
+const { listCommandRegex, listPRs } = require('./commands/list-prs')
+const { unwatchCommandRegex, unwatchRepo } = require('./commands/unwatch-repo')
+const { help } = require('./commands/help')
+const { setScheduleForPRs } = require('./batch/ping-prs')
+const { db } = require('./database/mongo')
 
-const app = express();
-const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET);
-const slackInteractions = createMessageAdapter(process.env.SLACK_SIGNING_SECRET);
-const web = new WebClient(process.env.SLACK_ACCESS_TOKEN);
-const port = process.env.PORT || 3000;
-let prsList = {};
+const app = express()
+const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET)
+const web = new WebClient(process.env.SLACK_ACCESS_TOKEN)
+const port = process.env.PORT || 3000
 
 const resetRegex = () => {
-  addCommandRegex.lastIndex = 0;
-  listCommandRegex.lastIndex = 0;
+  addCommandRegex.lastIndex = 0
+  listCommandRegex.lastIndex = 0
 }
 
-app.use('/slack/events', slackEvents.expressMiddleware());
-app.use('/slack/actions', slackInteractions.expressMiddleware());
+app.use('/slack/events', slackEvents.expressMiddleware())
 
-setScheduleForPRs({web, prsList});
+setScheduleForPRs({web, db})
 
-// Main engine of PResto
+//When mention display help documentation
 slackEvents.on('app_mention', (event) => {
+  help(web, event.channel)
+})
 
-  // If it's and edited post PResto shouldn't do anything
-  if(event.edited) {
-    return;
+slackEvents.on('error', console.error)
+
+app.use('/commands/*', bodyParser.urlencoded({ extended: false }))
+app.post('/commands/*', (req, res, payload) => {
+  const command = req.body.command
+  let answer = {}
+
+  if (unwatchCommandRegex.test(command)) { 
+    answer = unwatchRepo({db, req, res})
+  } else if (addCommandRegex.test(command)) {
+    answer = addRepo({db, req, res})
+  } else if (listCommandRegex.test(command)) { 
+    answer = listPRs({db, res, web, channel: req.body.channel_id})
   }
 
-  if (addCommandRegex.test(event.text)) {
-    addPR(web, prsList, event);
-  } else if (listCommandRegex.test(event.text)) { 
-    listPRs(web, prsList, event);
-  } else {
-    help(web, event.channel);
-  }
-
-  resetRegex();
-});
-
-slackEvents.on('error', console.error);
-
-// Message interactions for PResto
-slackInteractions.action('update_status', (actionEvent, respond) => updateStatus({actionEvent, prsList, respond, web}));
+  resetRegex()
+  
+  return answer
+})
 
 
-app.listen(port, () => console.log(`Server listening on port ${port}`));
+app.listen(port, () => console.log(`Server listening on port ${port}`))
