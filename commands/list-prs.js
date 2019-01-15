@@ -32,7 +32,7 @@ const buildPRMessage = (repos) => {
               avatarUrl,
               login
             },
-            reviews (first: 4, states: [CHANGES_REQUESTED, APPROVED){
+            reviews (first: 4, states: [CHANGES_REQUESTED, APPROVED]){
               nodes {
                 id,
                 state
