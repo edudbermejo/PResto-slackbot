@@ -32,7 +32,7 @@ const buildPRMessage = (repos) => {
               avatarUrl,
               login
             },
-            reviews (first: 4, states: [CHANGES_REQUESTED, APPROVED, COMMENTED]){
+            reviews (first: 4, states: [CHANGES_REQUESTED, APPROVED){
               nodes {
                 id,
                 state
@@ -56,7 +56,7 @@ const buildPRMessage = (repos) => {
           if ((!pullRequest.labels.nodes.some(label=> label.name === 'donotmerge' || label.name === 'WIP'))
             && pullRequest.mergeable !== 'CONFLICTING') {
             let prStatus = 'clean'
-            const hasChangesRequested = pullRequest.reviews.nodes.some(review => review.state === 'CHANGES_REQUESTED' || review.state === 'COMMENTED')
+            const hasChangesRequested = pullRequest.reviews.nodes.some(review => review.state === 'CHANGES_REQUESTED')
             const isApproved = pullRequest.reviews.nodes.some(review => review.state === 'APPROVED') 
             if (hasChangesRequested) {
               prStatus = 'dirty'
@@ -99,9 +99,8 @@ exports.listPRs = async ({web, db, channel, res}) => {
       web.chat.postMessage(message)
     }
   } else {
-    res.json()
     if(channelObject.length !== 0) {
-      channelObject.forEach(async ({repositories: channelRepos}) => {
+      channelObject.forEach(async ({repositories: channelRepos, name: channel}) => {
         if (channelRepos.length !== 0) {
           const message = await buildPRMessage(channelRepos)
           message.channel = channel
