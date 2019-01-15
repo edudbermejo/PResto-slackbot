@@ -1,19 +1,11 @@
 exports.listCommandRegex = /listprs/
 
-
-const { GraphQLClient } = require('graphql-request')
-
-const githubAPIEndpoint = 'https://api.github.com/graphql'
-
-const graphClient = new GraphQLClient(githubAPIEndpoint, {
-  headers: {
-    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-  },
-})
+const { graphClient } = require('../external-connections/github')
 
 const prColors = {
-  clean: "#17ed62",
-  dirty: "#8427d1"
+  clean: "#99ffcc",
+  dirty: "#ff9900",
+  shiny: "#2eb82e"
 }
 
 const buildPRMessage = (repos) => {
@@ -40,9 +32,10 @@ const buildPRMessage = (repos) => {
               avatarUrl,
               login
             },
-            reviews (first: 1, states: [CHANGES_REQUESTED]){
+            reviews (first: 4, states: [CHANGES_REQUESTED, APPROVED, COMMENTED]){
               nodes {
-                id
+                id,
+                state
               }
             }
             url,
@@ -62,14 +55,22 @@ const buildPRMessage = (repos) => {
         repository.pullRequests.nodes.map((pullRequest) => {
           if ((!pullRequest.labels.nodes.some(label=> label.name === 'donotmerge' || label.name === 'WIP'))
             && pullRequest.mergeable !== 'CONFLICTING') {
-            const hasChangesRequested = pullRequest.reviews.nodes.length !== 0
+            let prStatus = 'clean'
+            const hasChangesRequested = pullRequest.reviews.nodes.some(review => review.state === 'CHANGES_REQUESTED' || review.state === 'COMMENTED')
+            const isApproved = pullRequest.reviews.nodes.some(review => review.state === 'APPROVED') 
+            if (hasChangesRequested) {
+              prStatus = 'dirty'
+            } else if (isApproved) {
+              prStatus = 'shiny'
+            }
+
             const prObject = {
               title: pullRequest.title,
               title_link: pullRequest.url,
               text: pullRequest.repository.name,
               author_name: pullRequest.author.login,
               author_icon: pullRequest.author.avatarUrl,
-              color: hasChangesRequested ? prColors.dirty : prColors.clean
+              color: prColors[prStatus]
             }
             answer.attachments.push(prObject)
           }

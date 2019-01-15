@@ -10,7 +10,7 @@ const retrieve = async (channelId) => {
   if (channelId) {
     value = await Channel.findOne({name: channelId}).exec()
   } else {
-    value = await Channel.finds().exec()
+    value = await Channel.find().exec()
   }
   return value
 }
