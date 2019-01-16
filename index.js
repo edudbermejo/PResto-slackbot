@@ -9,6 +9,7 @@ const { unwatchCommandRegex, unwatchRepo } = require('./commands/unwatch-repo')
 const { help } = require('./commands/help')
 const { setScheduleForPRs } = require('./batch/ping-prs')
 const { db } = require('./database/mongo')
+const { englishBreakfast } = require('./batch/tea-time')
 
 const app = express()
 const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET)
@@ -23,6 +24,7 @@ const resetRegex = () => {
 app.use('/slack/events', slackEvents.expressMiddleware())
 
 setScheduleForPRs({web, db})
+englishBreakfast()
 
 //When mention display help documentation
 slackEvents.on('app_mention', (event) => {
