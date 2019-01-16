@@ -3,7 +3,7 @@ exports.listCommandRegex = /listprs/
 const { graphClient } = require('../external-connections/github')
 
 const prColors = {
-  clean: "#99ffcc",
+  clean: "#00ccff",
   dirty: "#ff9900",
   shiny: "#2eb82e"
 }
