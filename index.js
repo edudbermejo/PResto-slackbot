@@ -34,7 +34,7 @@ slackEvents.on('app_mention', (event) => {
 slackEvents.on('error', console.error)
 
 app.use('/commands/*', bodyParser.urlencoded({ extended: false }))
-app.post('/commands/*', (req, res, payload) => {
+app.post('/commands/*', (req, res) => {
   const command = req.body.command
   let answer = {}
 
@@ -49,6 +49,11 @@ app.post('/commands/*', (req, res, payload) => {
   resetRegex()
   
   return answer
+})
+
+// For answering the pings
+app.get('*', (req, res) => {
+  return res.json({})
 })
 
 
