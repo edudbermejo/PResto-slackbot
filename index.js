@@ -17,22 +17,25 @@ const web = new WebClient(process.env.SLACK_ACCESS_TOKEN)
 const port = process.env.PORT || 3000
 
 const resetRegex = () => {
+  unwatchCommandRegex.lastIndex = 0
   addCommandRegex.lastIndex = 0
   listCommandRegex.lastIndex = 0
 }
 
-app.use('/slack/events', slackEvents.expressMiddleware())
-
-setScheduleForPRs({web, db})
+// Batch tasks
+setScheduleForPRs({web, db}) 
 englishBreakfast()
 
-//When mention display help documentation
+// Listen to events for showing help when mentioned ( @ )
+app.use('/slack/events', slackEvents.expressMiddleware())
+
 slackEvents.on('app_mention', (event) => {
   help(web, event.channel)
 })
 
 slackEvents.on('error', console.error)
 
+// Main interactions
 app.use('/commands/*', bodyParser.urlencoded({ extended: false }))
 app.post('/commands/*', (req, res) => {
   const command = req.body.command
